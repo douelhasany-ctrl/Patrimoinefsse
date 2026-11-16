@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon patrimoine</title>
+<meta name="theme-color" content="#0f6b6b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Patrimoine">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%230f6b6b%27/%3E%3Crect x=%2722%27 y=%2755%27 width=%2714%27 height=%2723%27 fill=%27white%27/%3E%3Crect x=%2743%27 y=%2740%27 width=%2714%27 height=%2738%27 fill=%27white%27/%3E%3Crect x=%2764%27 y=%2722%27 width=%2714%27 height=%2756%27 fill=%27white%27/%3E%3C/svg%3E">
+<style>
+:root{--bg:#eef1f4;--sf:#fff;--ink:#14202b;--mu:#5b6b7a;--ln:#d6dde4;--ac:#0f6b6b;--ac2:#dff0ee;--pos:#1e7a4f;--neg:#b4412f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1820;--sf:#17232e;--ink:#e8eef3;--mu:#93a4b3;--ln:#2a3a48;--ac:#5cc0b8;--ac2:#1b3a3c;--pos:#5fcf95;--neg:#ee8a76}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+h1{font:600 26px Georgia,serif;margin:0 0 2px}h2{font:600 19px Georgia,serif;margin:22px 0 8px}
+.mu{color:var(--mu)}.pos{color:var(--pos)}.neg{color:var(--neg)}
+.big{font:600 44px/1.1 Georgia,serif;margin:4px 0 2px}
+.box{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:14px 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:12px 0}
+.grid b{display:block;font:600 22px Georgia,serif}
+.row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--ln)}
+.bar{height:8px;background:var(--ac2);border-radius:4px;overflow:hidden;margin-top:4px}.bar i{display:block;height:100%;background:var(--ac)}
+form,.bar2{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:8px 0}
+label{display:flex;flex-direction:column;font-size:13px;color:var(--mu);gap:2px}
+input,select{font:inherit;padding:8px;border:1px solid var(--ln);border-radius:6px;background:var(--sf);color:var(--ink);min-width:0}
+.btn{background:var(--ac);color:var(--bg);border:0;border-radius:6px;padding:9px 14px;font:600 14px inherit;font-family:inherit;cursor:pointer}
+.btn.g{background:none;color:var(--ink);border:1px solid var(--ln)}
+.x{background:none;border:0;color:var(--mu);cursor:pointer;font-size:16px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.it{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:12px 14px;margin:8px 0}
+.it .top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+summary{cursor:pointer;color:var(--mu);font-size:13px;margin-top:6px}
+.empty{color:var(--mu);padding:10px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Mon patrimoine</h1>
+<p class="mu" style="margin:0 0 14px">Actifs, dettes et évolution. Vos données restent sur cet appareil.</p>
+<section id="v"></section>
+</main>
+<script>
+var KA=["Liquidités","Épargne","Immobilier","Valeurs mobilières","Assurance-vie","Retraite","Entreprise","Autres actifs"],KD=["Emprunt immobilier","Crédit conso","Dettes fiscales","Autres dettes"];
+var KEY="patri_v1",PK="patri_pin",S={items:[]},locked=false;
+try{var r0=localStorage.getItem(KEY);if(r0)S=JSON.parse(r0);if(!Array.isArray(S.items))S={items:[]};locked=!!localStorage.getItem(PK)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function q(i){return document.getElementById(i)}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var fm=new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:2});
+function eur(x){return fm.format(x)}
+function td(){return new Date().toISOString().slice(0,10)}
+function fd(d){return d.slice(8)+"/"+d.slice(5,7)+"/"+d.slice(0,4)}
+function opts(a,s){return a.map(function(x){return'<option'+(x===s?" selected":"")+'>'+esc(x)+'</option>'}).join("")}
+function sorted(it){return it.v.slice().sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0})}
+function at(it,d){var x=sorted(it).filter(function(p){return p.d<=d});return x.length?x[x.length-1].n:0}
+function last(it){var s=sorted(it);return s[s.length-1]||{d:td(),n:0}}
+function tot(k,d){return S.items.filter(function(i){return i.kind===k}).reduce(function(t,i){return t+(d?at(i,d):last(i).n)},0)}
+function dates(){var m={};S.items.forEach(function(i){i.v.forEach(function(p){m[p.d]=1})});return Object.keys(m).sort()}
+async function hp(s){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("pw:"+s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
+function lockUI(){q("v").innerHTML='<div class="box" style="max-width:320px;margin:40px auto;text-align:center"><h2 style="margin-top:0">Code requis</h2><input id="pc" type="password" inputmode="numeric" autocomplete="off" placeholder="Code" style="width:100%;text-align:center;font-size:20px"><p id="pe" class="neg"></p><button class="btn" id="pb">Ouvrir</button></div>';var go=async function(){var h=await hp(q("pc").value);if(h===localStorage.getItem(PK)){locked=false;render()}else q("pe").textContent="Code incorrect"};q("pb").onclick=go;q("pc").onkeydown=function(e){if(e.key==="Enter")go()}}
+function chart(){var D=dates();if(D.length<2)return'<div class="box"><b>Évolution</b><p class="mu" style="margin:4px 0 0">Mettez à jour vos valeurs à des dates différentes : la courbe apparaît dès qu’il y a deux dates.</p></div>';
+var N=D.map(function(d){return tot("a",d)-tot("d",d)}),mn=Math.min.apply(null,N),mx=Math.max.apply(null,N),r=mx-mn||1,t0=Date.parse(D[0]),t1=Date.parse(D[D.length-1]),P=D.map(function(d,i){return[10+(Date.parse(d)-t0)/(t1-t0)*580,125-(N[i]-mn)/r*100]}),dl=N[N.length-1]-N[0];
+return'<div class="box"><b>Évolution du patrimoine net</b><svg viewBox="0 0 600 140" style="width:100%;height:auto"><polyline fill="none" stroke="var(--ac)" stroke-width="2.5" points="'+P.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1)}).join(" ")+'"/>'+P.map(function(p,i){return'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4" fill="var(--ac)"><title>'+fd(D[i])+" : "+eur(N[i])+'</title></circle>'}).join("")+'</svg><div class="row"><span class="mu">'+fd(D[0])+" : "+eur(N[0])+'</span><span class="mu">'+fd(D[D.length-1])+" : "+eur(N[N.length-1])+'</span></div><div>Variation : <b class="'+(dl<0?"neg":"pos")+'">'+(dl>0?"+":"")+eur(dl)+'</b></div></div>'}
+function list(k){var L=S.items.filter(function(i){return i.kind===k});if(!L.length)return'<div class="empty">Rien pour l’instant.</div>';
+return L.map(function(i){var l=last(i);return'<div class="it"><div class="top"><div><b>'+esc(i.name)+'</b><div class="mu">'+esc(i.cat)+" · au "+fd(l.d)+'</div></div><div><b>'+eur(l.n)+'</b> <button class="x" data-del="'+i.id+'" aria-label="Supprimer">✕</button></div></div><form class="uf" data-id="'+i.id+'"><label>Nouvelle valeur (€)<input name="n" type="number" step="0.01" required style="width:130px"></label><label>Date<input name="d" type="date" required value="'+td()+'"></label><button class="btn g">Mettre à jour</button></form><details><summary>Historique ('+i.v.length+')</summary>'+sorted(i).reverse().map(function(p){return'<div class="row"><span>'+fd(p.d)+'</span><span>'+eur(p.n)+' <button class="x" data-dp="'+i.id+"|"+p.d+'" aria-label="Supprimer ce point">✕</button></span></div>'}).join("")+'</details></div>'}).join("")}
+function render(){if(locked){lockUI();return}
+var A=tot("a"),Dt=tot("d"),cm={};S.items.filter(function(i){return i.kind==="a"}).forEach(function(i){cm[i.cat]=(cm[i.cat]||0)+last(i).n});
+var rep=Object.keys(cm).map(function(k){return[k,cm[k]]}).sort(function(a,b){return b[1]-a[1]}).map(function(r){var p=A?Math.round(r[1]/A*100):0;return'<div style="margin:8px 0"><div class="row" style="border:0;padding:0"><span>'+esc(r[0])+'</span><span>'+eur(r[1])+' <span class="mu">('+p+' %)</span></span></div><div class="bar"><i style="width:'+p+'%"></i></div></div>'}).join("");
+q("v").innerHTML='<div class="box"><span class="mu">Patrimoine net</span><div class="big '+(A-Dt<0?"neg":"")+'">'+eur(A-Dt)+'</div></div><div class="grid"><div class="box"><span class="mu">Actifs</span><b class="pos">'+eur(A)+'</b></div><div class="box"><span class="mu">Dettes</span><b class="neg">'+eur(Dt)+'</b></div></div>'+chart()+
+'<h2>Répartition des actifs</h2><div class="box">'+(rep||'<div class="empty">Ajoutez un actif pour voir la répartition.</div>')+'</div>'+
+'<h2>Ajouter un actif ou une dette</h2><form id="fa" class="box"><label>Nature<select name="k"><option value="a">Actif</option><option value="d">Dette</option></select></label><label>Libellé<input name="name" required placeholder="Livret A"></label><label>Catégorie<select name="cat">'+opts(KA)+'</select></label><label>Valeur (€)<input name="n" type="number" step="0.01" min="0" required style="width:130px"></label><label>Date<input name="d" type="date" required value="'+td()+'"></label><button class="btn">Ajouter</button></form>'+
+'<h2>Actifs · '+eur(A)+'</h2>'+list("a")+'<h2>Dettes · '+eur(Dt)+'</h2>'+list("d")+
+'<h2>Sauvegarde</h2><p class="mu">Exportez régulièrement une sauvegarde : si vous videz les données du navigateur, tout est effacé.</p><div class="bar2"><button class="btn" id="bk">Exporter la sauvegarde</button><button class="btn g" id="imp">Importer une sauvegarde</button><button class="btn g" id="pin">Code de verrouillage</button><button class="btn g" id="rst">Tout effacer</button></div><input type="file" id="fi" accept=".json,application/json" hidden>';
+var fa=q("fa"),k=fa.elements.k,c=fa.elements.cat;function sync(){c.innerHTML=opts(k.value==="a"?KA:KD)}k.onchange=sync;
+fa.onsubmit=function(e){e.preventDefault();S.items.push({id:id(),kind:k.value,name:fa.elements.name.value,cat:c.value,v:[{d:fa.elements.d.value,n:parseFloat(fa.elements.n.value)}]});save();render()};
+document.querySelectorAll(".uf").forEach(function(f){f.onsubmit=function(e){e.preventDefault();var it=S.items.filter(function(i){return i.id===f.dataset.id})[0],d=f.elements.d.value,n=parseFloat(f.elements.n.value);it.v=it.v.filter(function(p){return p.d!==d});it.v.push({d:d,n:n});save();render()}});
+document.querySelectorAll("[data-del]").forEach(function(b){b.onclick=function(){if(confirm("Supprimer cet élément et son historique ?")){S.items=S.items.filter(function(i){return i.id!==b.dataset.del});save();render()}}});
+document.querySelectorAll("[data-dp]").forEach(function(b){b.onclick=function(){var p=b.dataset.dp.split("|"),it=S.items.filter(function(i){return i.id===p[0]})[0];if(it.v.length<2){alert("Supprimez plutôt l’élément entier.");return}it.v=it.v.filter(function(x){return x.d!==p[1]});save();render()}});
+q("bk").onclick=function(){var a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(S));a.download="patrimoine-sauvegarde-"+td()+".json";a.click()};
+q("imp").onclick=function(){q("fi").click()};
+q("fi").onchange=function(){var f=q("fi").files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{var d=JSON.parse(rd.result);if(!Array.isArray(d.items)){if(Array.isArray(d.assets)||Array.isArray(d.debts)){var mk=function(a,kd){var m=a.name.match(/\(au (\d\d)\/(\d\d)\/(\d{4})\)/);return{id:id(),kind:kd,name:a.name.replace(/\s*\(au [^)]*\)/,""),cat:a.cat,v:[{d:m?m[3]+"-"+m[2]+"-"+m[1]:td(),n:a.amount}]}};d={items:(d.assets||[]).map(function(a){return mk(a,"a")}).concat((d.debts||[]).map(function(a){return mk(a,"d")}))}}else throw 0}
+if(confirm("Remplacer les données actuelles par cette sauvegarde ?")){S=d;save();render()}}catch(e){alert("Fichier de sauvegarde invalide.")}};rd.readAsText(f)};
+q("pin").onclick=function(){var c=prompt("Nouveau code (4 caractères ou plus). Laissez vide pour retirer le code.");if(c===null)return;try{if(!c){localStorage.removeItem(PK);alert("Code retiré.")}else if(c.length<4)alert("Code trop court.");else hp(c).then(function(x){localStorage.setItem(PK,x);alert("Code enregistré. Il sera demandé à la prochaine ouverture.")})}catch(e){alert("Impossible d’enregistrer le code.")}};
+q("rst").onclick=function(){if(confirm("Effacer toutes les données ?")){S={items:[]};save();render()}}}
+render();
+</script>
+</body>
+</html>
